@@ -13,22 +13,109 @@ import Maybe
 import List
 import Random
 
--- Glory on their wings
+{--
+LOOK OUT! SPACE ROCKS!
 
+This is an attempt to make the game Asteroids in elm.  It's a learning project,
+so apologies in advance for ugly code and bugs.    
 
--- This is an attempt to make the game Asteroids in elm.
+There are some variations from Asteroids: you pilot an armed space ambulance, 
+patrolling a patch of toroidal space near some star bases.  Try to keep 
+the area clean and safe.
 
+As you destroy space rocks, valuable crystals may be discovered, which you
+can pick up by flying over them, and deliver by flying to the guild base.
+
+There will be civilian transports that fly through the region and then warp
+out.  If they hit a rock, they will launch lifeboats.  Also you will
+be given credit for every transport that passes through without hitting a
+rock.    
+--}
+
+{--
+Credits:
+
+Code: by me
+
+Sprites: by me using paint
+
+Background: Carina Nebula image from 
+http://commons.wikimedia.org/wiki/Commons:Featured_pictures/Astronomy
+--}
+
+{--
+Influences:
+
+The Learn Elm site: 
+    http://elm-lang.org/Learn.elm
+    (for learning elm)
+
+From there, the Make Pong page in particular: 
+    http://elm-lang.org/blog/Pong.elm
+    (for game structure in elm)
+
+Another asteroids in elm implementation:
+    https://github.com/CheatEx/elm-asteroids
+    (unfamiliar with functional languages, I was unsure how to implement
+    collision detection: folds or maps or etc? )
+--}
 
 {--
 Some things learned:
 
-1) Always make sure your multiway ifs includes an "otherwise" and your
-    ifs include an "else".  The compiler will not catch this!!!!
-    And if you miss it, your program will hang!
+1) Always make sure your multiway ifs include an "otherwise".
+    The compiler will not catch this!!!!
+    And if you miss it, your program can hang!
 
+2) If you don't start your module with "module _ where", then it will run fine
+    in elm reactor, and *appear* to compile properly in elm make, but it will
+    not run from the index.html.  You'll get a js error instead. 
 
+3) Doing randomness properly is tricky. Elm doesn't allow you to do a lot of 
+    impure things that would be taken for granted in other languages, like
+    simple rand functions.  Instead you create a generator, and then
+    feed it a seed, which returns the number(s) of interest, and a new seed.
+    What you should then do is keep track of the seed and update it every
+    time you call the RNG.  By the time I wanted to implement randomness
+    this would have been more complicated than I cared to do, so I faked it 
+    by giving the RNG arbitrary seeds based on game state.  
+    This is ugly. 
+    A game like asteroids doesn't mind this much, but a game like chess would: 
+    It wouldn't be good if the chess AI always chose the exact same move in 
+    response to the player's.
+
+4) Doing sound is also hard.  Maybe harder than making a proper RNG ;)  It can 
+    be done (see elm tetris, and the timer gong), but there are complications
+    and drawbacks (eg breaking elm reactor).  
 --}
 
+{--
+TODO:
+
+1) Clean up. Make nicer documentation. Remove unused and refactor ugly.
+    If it's all ugly then make do. IN PROGRESS
+
+2) Make 2 bases: one for crystal drop off, one for survivors.  This will make 
+    it so the player won't just camp out on the base; they'll have an incentive
+    to move between opposite corners.  DONE!
+
+3) Metallic and carbonaceous rocks? New loot (metal)?  Different calving
+    behavior?  More variety in the rocks basically.
+
+4) Pirates? Prisoners?  Will require some AI. New updates needed:
+    -Enemy Ships (would AI be a separate step?)
+    -Maybe AI
+    -Enemy Bullets  
+    -Collision with Enemy Bullets (player, transports, rocks?)
+    -Pirate survivors loot (prisoners)
+
+5) Weaponry: homing missiles?
+
+6) Make UI nicer?  Yellow text X(  Maybe put boxes around the text?    
+
+7) User suggestions: _    
+
+--}
 
 {--
 
@@ -46,16 +133,20 @@ Four Sections:
 
 -- 1) Signals
 
-main = view <~ Window.dimensions ~ foldGame
 
-
+-- make it go!
 foldGame : Signal Game
 foldGame = Signal.foldp updateGame startGame allInputs
 
+-- make it show!
+main = view <~ Window.dimensions ~ foldGame
 
+-- this is called "delta" in many examples
+-- but delta is change and time isn't the only thing that can change!
 tick : Signal Time.Time
-tick = Time.inSeconds <~ Time.fps 35
+tick = Time.inSeconds <~ Time.fps 35    
 
+-- this maps together all the input signals we care about
 allInputs : Signal Input
 allInputs = Signal.sampleOn tick <|
                Input <~ tick 
@@ -63,6 +154,8 @@ allInputs = Signal.sampleOn tick <|
                       ~ Keyboard.space 
                       ~ Keyboard.ctrl 
                       ~ Time.every (Time.second * 3)
+                      -- ^this is used to cause some things to trigger
+                      -- every 3 seconds
 
 
 
@@ -70,7 +163,7 @@ allInputs = Signal.sampleOn tick <|
 
 -- 2) Models
 
-
+-- all the input types                  
 type alias Input =
     { tick : Time.Time
     , arrows : {x:Int,y:Int}
@@ -80,7 +173,7 @@ type alias Input =
     }
 
 -- some constants
--- the size of the game board
+-- the size of the game board (px)
 (gameW,gameH) = (800,600)
 (halfW,halfH) = (400,300)
 
@@ -90,7 +183,7 @@ type State = Play | Pause
 
 -- objects in space
 type alias Object a =
-    {a | x:Float, y:Float, vx: Float, vy:Float, r:Float}
+    {a | x:Float, y:Float, vx: Float, vy:Float, r:Float}    
 
 -- player
 type alias Player =
@@ -103,44 +196,44 @@ type alias Player =
 type alias Rock =
     Object { size:Size }
 
--- asteroid sizes    
-type Size = Small | Medium | Large | Huge
+type Size = Small | Medium | Large | Huge       -- asteroid sizes
 
-rockVChange = 50
+rockVChange = 50                    -- when rocks explode +/- dv
 
 -- bullet
 type alias Bullet =
     Object { age: Time.Time }
 
-bulletSpeed = 500
-bulletMaxAge = 1.0
-bulletReload = 0.1
+bulletSpeed = 500                   -- bullet muzzle speed (px/sec)
+bulletMaxAge = 1.0                  -- how long a bullet lasts (seconds)
+bulletReload = 0.1                  -- how long it takes to reload (seconds)
 
 -- explosion
 type alias Explosion =
     Object { age: Time.Time }
 
-explosionMaxAge = 0.2
-explosionGrowthRate = 100
+explosionMaxAge = 0.2               -- explosions last this long (seconds)
+explosionGrowthRate = 110           -- explosions grow this fast (px/sec)
+explosionInitialRadius = 11         -- explosions start this big (px)
 
 -- loot
 type alias Loot =
     Object { kind : LootKind , ang : Float , vang : Float, age : Time.Time }
 
-type LootKind = Lifeboat | Crystal
+type LootKind = Lifeboat | Crystal  -- kinds of loot (crystal, lifeboat, etc)
 
-lootMaxAge = 20
-lootRadius = 3
+lootMaxAge = 20                     -- loot lasts this long (seconds)
+lootRadius = 3                      -- loot radius (px)
 
--- the star base
+-- the star base and guild base
 type alias Base =
-    Object {ang : Float}
+    Object {ang : Float, imageName : String }
 
 -- transports    
 type alias Transport =
     Object { ang : Float, imageName : String }
 
-transportSpeed = 50    
+transportSpeed = 50                 -- the transports' speed (px/sec)
 
 -- this must contain all the stuff in the game!
 type alias Game =
@@ -151,13 +244,14 @@ type alias Game =
     , time : Time.Time
     , explosions : List Explosion
     , loot : List Loot
-    , lootCaught : (Int,Int)
-    , lootSaved : (Int,Int)
+    , lootCaught : (Int,Int)        -- (# crystals, # lifeboats)
+    , lootSaved : (Int,Int)         -- ^same
     , base : Base 
-    , seed : Random.Seed
+    , guild : Base 
+    , seed : Random.Seed            -- for passing to RNG, but curr unused
     , transportsAway : Int
     , transports : List Transport
-    , hiscores : (Int,Int,Int)
+    , hiscores : (Int,Int,Int)      -- (# crystals, # lifeboats, # transports)
     }
 
 -- this is the initial state of the game, needed for Signal.foldp
@@ -174,6 +268,7 @@ startGame =
     , lootCaught = (0,0)
     , lootSaved = (0,0)
     , base = startBase
+    , guild = startGuild
     , seed = initialSeed
     , transportsAway = 0
     , transports = []
@@ -196,8 +291,12 @@ startRocks =
 
 startBase : Base
 startBase =
-    { x=-200,y=200,vx=0,vy=0,r=40,ang=37}
+    { x=-200,y=200,vx=0,vy=0,r=40,ang=37,imageName="images/Grey2.png"}
 
+startGuild : Base
+startGuild = 
+    { startBase | imageName <- "images/DomeBuilder0.png"
+                , x <- 200, y <- -200, r<-30, ang <- 172 }
 
 initialSeed : Random.Seed
 initialSeed = Random.initialSeed 5
@@ -205,56 +304,64 @@ initialSeed = Random.initialSeed 5
 
 -- 3) Updates
 
+-- quick and dirty random probability
+-- note that it is very easy to get the same result multiple times
+-- be careful!
 quickProb : Float -> Float
 quickProb junk = 
     getSeed junk |> getProbFromSeed |> fst 
 
-getRandFromFloat : (Float,Float) -> Float -> Float
-getRandFromFloat tuple junk =
-    getRandRange (getSeed junk) tuple |> fst     
-
+-- if you have a seed and want a probability, use this
+-- it returns the new seed which you can use in future calls
+-- to ensure you don't get the same result     
 getProbFromSeed : Random.Seed -> (Float,Random.Seed)
 getProbFromSeed seed =
     Random.generate (Random.float 0 1) seed
 
-getRandRange : Random.Seed -> (Float,Float) -> (Float,Random.Seed)
-getRandRange seed (minim,maxim) =
-    Random.generate (Random.float minim maxim) seed    
-
+-- if you want to use a Float for a random seed, use this
 getSeed : Float -> Random.Seed
 getSeed junk =
     floor junk |> Random.initialSeed
 
+-- wrap x coordinates so they stay on screen
+-- remember (0,0) is at the center!
 wrapX : Float -> Float
 wrapX x =
     if | x > halfW -> x - gameW
        | x < 0-halfW -> x + gameW 
        | otherwise -> x
 
+-- wrap y coordinates so they stay on screen
+-- remember (0,0) is at the center!
 wrapY : Float -> Float
 wrapY y =
     if | y > halfH -> y - gameH
        | y < 0-halfH -> y + gameH
        | otherwise -> y
         
-
+-- move with wrapping
 moveObj : Time.Time -> Object a -> Object a
 moveObj t obj =
     { obj | x <- obj.x + t*obj.vx |> wrapX 
           , y <- obj.y + t*obj.vy |> wrapY 
           }
 
+-- is this object off the screen? 
+-- (objects that wrap should never do this, but not all objects wrap)
 isOffscreen : Object a -> Bool
 isOffscreen obj =
     if | abs obj.x > halfW -> True
        | abs obj.y > halfH -> True
        | otherwise -> False 
 
+-- are these two objects colliding?
 isColliding : Object a -> Object b -> Bool
 isColliding obj1 obj2 =
     (obj1.x - obj2.x)^2 + (obj1.y - obj2.y)^2
     <= (obj1.r + obj2.r)^2
 
+-- collide every object in the list with the object given
+-- then return every collsion as a pair of colliding objects
 listCollide : List (Object b) -> Object a ->  List (Object a, Object b)
 listCollide list a  =
     let
@@ -263,13 +370,16 @@ listCollide list a  =
     in
     List.filterMap (filter a) list
 
+-- get a unit vector pointed allow the given angle
+-- ang should already be in elm's internal angle unit (radians)
+-- so use (degrees x) or w/e *before* calling this
 getVec : Float -> { x:Float, y:Float}
 getVec ang =
     { x = cos ang
     , y = sin ang
     }          
     
-
+-- given an asteroid's size, get its radius
 getRadius : Size -> Float
 getRadius size =
     case size of
@@ -278,6 +388,10 @@ getRadius size =
         Large -> 25
         Huge -> 35
 
+-- given an asteroid's size, get the size of an asteroid one step smaller
+-- This is used by the asteroid calving functions.
+-- Small returns Small at the moment, but it probably shouldn't be used.
+-- You'd get tiny asteroids that never ever die.
 getSmallerSize : Size -> Size
 getSmallerSize size =
     case size of 
@@ -287,7 +401,10 @@ getSmallerSize size =
         Huge -> Large
 
 
-
+-- this updates the whole game state by one tick
+-- Many of the sub systems require access to disparate parts of the game state
+-- so it was easier to have them take and return the entire game model.
+-- ^this seems like a dubious practice, consider cleaner methods
 updateGame : Input -> Game -> Game    
 updateGame input game =
     if game.state == Pause then maybeUnpause input game else
@@ -296,19 +413,21 @@ updateGame input game =
     |> updatePlayer input                       -- update the player
     |> updateBullets input                      -- update the bullets
     |> updateRocks input                        -- update the asteroids
+    |> updateBase input                         -- update the bases
     |> updateExplosions input                   -- update the explosions
     |> updateLoot input                         -- update the loot items
     |> updateTransports input                   -- update the transports
     |> updateCollisions input                   -- collide bullets and rocks
-    |> timerSpawns input                         -- maybe create new rocks
+    |> timerSpawns input                        -- maybe create new rocks, etc
 
 
-
+-- if the game is paused, then we might want to unpause
 maybeUnpause : Input -> Game -> Game
 maybeUnpause input game =
     if input.space == False then game else
     { game | state <- Play }
 
+-- if the game isn't paused, then we might want to pause it, or reset it
 maybePause : Input -> Game -> Game
 maybePause input game = 
     let 
@@ -325,7 +444,8 @@ maybePause input game =
     else
         { game | state <- Pause }
 
-
+-- the player is pretty complicated.  this handles player:
+--      shooting, moving, maneuvering, gathering, delivering, and dying
 updatePlayer : Input -> Game -> Game
 updatePlayer input game =
     if game.player.dead == True then game else
@@ -349,13 +469,13 @@ updatePlayer input game =
         vy' = player.vy + vec.y * thrust * t
         damp t  = 1 - 0.25 * t
         (lootCaught',lootSaved') = 
-            if isColliding player game.base then
-                let 
-                (x1,y1) = game.lootCaught
-                (x2,y2) = game.lootSaved
-                in
-                ((0,0),(x1+x2,y1+y2))
-            else (game.lootCaught,game.lootSaved)
+            let 
+            (x1,y1) = game.lootCaught
+            (x2,y2) = game.lootSaved
+            in
+            if isColliding player game.base then ((x1,0),(x2,y1+y2)) else
+            if isColliding player game.guild then ((0,y1),(x1+x2,y2)) else
+            (game.lootCaught,game.lootSaved)
         player' = 
             { player | vx <- vx' * damp t
             , vy <- vy' * damp t
@@ -371,6 +491,11 @@ updatePlayer input game =
             , lootSaved <- lootSaved'
             }
 
+-- this takes a Player record rather than Object a, only because it 
+-- needs an angle field.  Hmm
+-- also it doesn't need the Game argument currently. 
+-- under what circumstances would it make use of the Game argument?  
+-- maybe if it implemented homing missiles and needed to find targets?
 spawnBullet : Player -> Game -> Bullet
 spawnBullet player game =
     let
@@ -401,6 +526,8 @@ updateBullet input game bullet =
     { bullet | age <- age' }
     |> moveObj t |> Just
 
+-- this updates transports' position, removes them if they collide or escape
+-- and handles the consquences of transport removal
 updateTransports : Input -> Game -> Game
 updateTransports input game =
     let
@@ -419,6 +546,7 @@ updateTransports input game =
             , loot <- List.append game.loot lifeboats 
             }
 
+-- folding is nice. like a map that remembers
 foldTransports : Input -> Transport -> (List Transport, Int) 
                 -> (List Transport,Int)  
 foldTransports input transport (list,away) = 
@@ -445,7 +573,8 @@ launchLifeboats trans =
     ]
 
 
-
+-- i need a shorter word or abbreviation for explosion
+-- "boom" maybe?
 updateExplosions : Input -> Game -> Game
 updateExplosions input game =
     let
@@ -469,11 +598,21 @@ updateRocks input game =
     let
     t = input.tick
     rocks' = List.map (moveObj t) game.rocks
-    base = game.base
-    base' = { base | ang <- base.ang + 20 * t}
     in
-    { game | rocks <- rocks' 
-            , base <- base'}
+    { game | rocks <- rocks'}
+
+
+updateBase : Input -> Game -> Game
+updateBase input game = 
+    let 
+    t = input.tick
+    rotateBase b a = { b | ang <- b.ang + a }
+    base' = (20*t) |> rotateBase game.base  
+    guild' =  (-15*t) |> rotateBase game.guild 
+
+    in
+    { game | guild <- guild' , base <- base' }
+
 
 updateLoot : Input -> Game -> Game
 updateLoot input game =
@@ -539,11 +678,12 @@ calve rock =
 
 createExplosion : Object a -> Explosion
 createExplosion obj =
-    {x = obj.x, y = obj.y, vx = 0, vy = 0, r = 10, age = 0}
+    {x = obj.x, y = obj.y, vx = 0, vy = 0
+    , r = explosionInitialRadius, age = 0}
 
 createCrystal : Object a -> Maybe Loot
 createCrystal obj = 
-    if quickProb (obj.x * obj.y) > 0.3 then Nothing else
+    if quickProb (obj.vx * obj.vy) > 0.3 then Nothing else
     let
     dvx = rockVChange * ( -0.5 + quickProb ( obj.x * obj.vx ) )
     dvy = rockVChange * ( -0.5 + quickProb ( obj.y * obj.vy ) )
@@ -607,8 +747,6 @@ makeRandomRock input game =
 
 
 
---}
-
 
 
 
@@ -621,23 +759,24 @@ view (w,h) game =
     collage gameW gameH                 -- this makes the game board
     [ viewSky                           -- draw the stars
     , viewBase game.base                -- draw the starbase
+    , viewBase game.guild               -- draw the guild base
     , viewBullets game.bullets          -- draw the bullets
     , viewLoot game.loot                -- draw the loot items
     , viewTransports game.transports    -- draw the transports
-    , viewPlayer game.player            -- draw the player
     , viewRocks game.rocks              -- draw the asteroids
+    , viewPlayer game.player            -- draw the player
     , viewExplosions game.explosions    -- draw the explosions
     , viewText game                     -- draw screen text
     , viewPauseText game                -- draw pause text
     , viewHiscores game                 -- draw the high scores
     ]
+-- ^FIFO: things later in the list are drawn over things earlier in the list
     
-
-
-viewBackground : Form
-viewBackground =
-    rect gameW gameH |> filled black
-    
+-- draw a background image
+viewSky : Form
+viewSky = 
+    fittedImage gameW gameH "images/stars.jpg"
+    |> toForm
 
 -- remember Collage.group : List Form -> Form
 viewBullets : List Bullet -> Form
@@ -656,7 +795,6 @@ drawBullet bullet =
     |> filled color
     |> move (bullet.x,bullet.y)
 
--- remember Collage.group : List Form -> Form
 viewRocks : List Rock -> Form
 viewRocks rocks = 
     List.map drawRock rocks |> group
@@ -692,7 +830,6 @@ drawExplosion explosion =
                | ageRatio < 0.5 -> white
                | ageRatio < 0.8 -> lightRed
                | otherwise -> darkRed 
-    o = 1
     in
     circle explosion.r 
     |> filled color
@@ -730,7 +867,8 @@ viewBase : Base -> Form
 viewBase base =
     let diameter = base.r * 2
     in
-    image diameter diameter "images/Grey2.png" |> toForm 
+    --image diameter diameter "images/Grey2.png" |> toForm 
+    image diameter diameter base.imageName |> toForm 
     |> rotate (degrees base.ang)
     |> move (base.x,base.y)
 
@@ -738,12 +876,12 @@ viewBase base =
 viewText : Game -> Form
 viewText game =
     let
-    (crystalS,lifeboatS) = game.lootSaved
-    stringS = "Crystals delivered: " ++ (toString crystalS) 
-             ++ "    Survivors rescued: " ++ (toString lifeboatS)
-             ++ "    Transports escaped: " ++ ( toString game.transportsAway)
+    (crystal,lifeboat) = game.lootSaved
+    string = "Crystals delivered: " ++ (toString crystal) 
+             ++ "    Survivors rescued: " ++ (toString lifeboat)
+             ++ "    Transports protected: " ++ ( toString game.transportsAway)
     in
-    drawText stringS |> toForm |> move (0,-270)
+    drawText string |> toForm |> move (0,-270)
 
 viewPauseText : Game -> Form
 viewPauseText game =
@@ -751,21 +889,20 @@ viewPauseText game =
     [ drawText "LOOK OUT! SPACE ROCKS!" |> toForm |> move (0,80)
     , drawText "arrow keys to move" |> toForm |> move (0,60)
     , drawText "space bar to unpause and fire" |> toForm |> move (0,40)
-    , drawText "deliver loot to the base" |> toForm |> move (0,20)
-    , drawText "control key to pause or reset" |> toForm |> move (0,0)
-    ]) |> group |> move (0,180)  
+    , drawText "deliver crystals to the bottom right base" 
+        |> toForm |> move (0,20)
+    , drawText "bring survivors to the top left base" 
+        |> toForm |> move (0,0)
+    , drawText "control key to pause or reset" |> toForm |> move (0,-20)
+    ]) |> group |> move (0,200)  
 
-    
+-- given a string message, make an element of it    
 drawText : String -> Element
 drawText message =
     centered 
-    ( Text.fromString message |> Text.color lightBlue) 
+    ( Text.fromString message |> Text.color yellow) 
 
 
-viewSky : Form
-viewSky = 
-    image gameW gameH "images/stars.jpg"
-    |> toForm
 
 viewHiscores : Game -> Form
 viewHiscores game =
