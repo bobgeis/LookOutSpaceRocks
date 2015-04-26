@@ -23,57 +23,7 @@ Elm.Asteroids.make = function (_elm) {
    $Time = Elm.Time.make(_elm),
    $Window = Elm.Window.make(_elm);
    var drawText = function (message) {
-      return $Graphics$Element.centered($Text.color($Color.yellow)($Text.fromString(message)));
-   };
-   var viewHiscores = function (game) {
-      return function () {
-         var $ = game.hiscores,
-         x = $._0,
-         y = $._1,
-         z = $._2;
-         var string = _U.eq({ctor: "_Tuple3"
-                            ,_0: x
-                            ,_1: y
-                            ,_2: z},
-         {ctor: "_Tuple3"
-         ,_0: 0
-         ,_1: 0
-         ,_2: 0}) ? " " : A2($Basics._op["++"],
-         "High scores - Crystals: ",
-         A2($Basics._op["++"],
-         $Basics.toString(x),
-         A2($Basics._op["++"],
-         "    Survivors: ",
-         A2($Basics._op["++"],
-         $Basics.toString(y),
-         A2($Basics._op["++"],
-         "    Transports: ",
-         $Basics.toString(z))))));
-         return $Graphics$Collage.move({ctor: "_Tuple2"
-                                       ,_0: 0
-                                       ,_1: -290})($Graphics$Collage.toForm(drawText(string)));
-      }();
-   };
-   var viewText = function (game) {
-      return function () {
-         var $ = game.lootSaved,
-         crystal = $._0,
-         lifeboat = $._1;
-         var string = A2($Basics._op["++"],
-         "Crystals delivered: ",
-         A2($Basics._op["++"],
-         $Basics.toString(crystal),
-         A2($Basics._op["++"],
-         "    Survivors rescued: ",
-         A2($Basics._op["++"],
-         $Basics.toString(lifeboat),
-         A2($Basics._op["++"],
-         "    Transports protected: ",
-         $Basics.toString(game.transportsAway))))));
-         return $Graphics$Collage.move({ctor: "_Tuple2"
-                                       ,_0: 0
-                                       ,_1: -270})($Graphics$Collage.toForm(drawText(string)));
-      }();
+      return $Graphics$Element.centered($Text.color($Color.lightBlue)($Text.fromString(message)));
    };
    var viewBase = function (base) {
       return function () {
@@ -102,12 +52,12 @@ Elm.Asteroids.make = function (_elm) {
    var viewPlayer = function (player) {
       return player.dead ? $Graphics$Collage.group(_L.fromArray([$Graphics$Collage.move({ctor: "_Tuple2"
                                                                                         ,_0: 0
-                                                                                        ,_1: 200})($Graphics$Collage.toForm(drawText("You have died.  So it goes.")))
+                                                                                        ,_1: 200})($Graphics$Collage.toForm($Graphics$Element.opacity(0.8)($Graphics$Element.color($Color.darkBlue)(drawText("You have died.  So it goes.")))))
                                                                 ,$Graphics$Collage.move({ctor: "_Tuple2"
                                                                                         ,_0: 0
-                                                                                        ,_1: 180})($Graphics$Collage.toForm(drawText("Press control to reset and play again!")))])) : $Graphics$Collage.move({ctor: "_Tuple2"
-                                                                                                                                                                                                             ,_0: player.x
-                                                                                                                                                                                                             ,_1: player.y})($Graphics$Collage.rotate(player.ang - $Basics.degrees(90))($Graphics$Collage.toForm(A3($Graphics$Element.image,
+                                                                                        ,_1: 180})($Graphics$Collage.toForm($Graphics$Element.opacity(0.8)($Graphics$Element.color($Color.darkBlue)(drawText("Press control to reset and play again!")))))])) : $Graphics$Collage.move({ctor: "_Tuple2"
+                                                                                                                                                                                                                                                                                       ,_0: player.x
+                                                                                                                                                                                                                                                                                       ,_1: player.y})($Graphics$Collage.rotate(player.ang - $Basics.degrees(90))($Graphics$Collage.toForm(A3($Graphics$Element.image,
       20,
       20,
       "images/Medic1.png"))));
@@ -155,10 +105,10 @@ Elm.Asteroids.make = function (_elm) {
                            ,_0: _v0._0
                            ,_1: _v0._1 + 1};}
                  _U.badCase($moduleName,
-                 "between lines 634 and 636");
+                 "between lines 641 and 643");
               }();}
          _U.badCase($moduleName,
-         "between lines 634 and 636");
+         "between lines 641 and 643");
       }();
    });
    var updateBase = F2(function (input,
@@ -187,7 +137,7 @@ Elm.Asteroids.make = function (_elm) {
             case "Medium": return 15;
             case "Small": return 8;}
          _U.badCase($moduleName,
-         "between lines 385 and 389");
+         "between lines 392 and 396");
       }();
    };
    var getVec = function (ang) {
@@ -318,7 +268,7 @@ Elm.Asteroids.make = function (_elm) {
                case "Lifeboat":
                return "images/Lifeboat1.png";}
             _U.badCase($moduleName,
-            "between lines 846 and 852");
+            "between lines 853 and 859");
          }();
          return $Graphics$Collage.move({ctor: "_Tuple2"
                                        ,_0: loot.x
@@ -464,7 +414,7 @@ Elm.Asteroids.make = function (_elm) {
             case "Medium": return Small;
             case "Small": return Small;}
          _U.badCase($moduleName,
-         "between lines 397 and 401");
+         "between lines 404 and 408");
       }();
    };
    var calve = function (rock) {
@@ -507,7 +457,7 @@ Elm.Asteroids.make = function (_elm) {
                   {case "_Tuple2":
                      return _U.eq(_v9._0,bullet);}
                   _U.badCase($moduleName,
-                  "on line 644, column 48 to 59");
+                  "on line 651, column 48 to 59");
                }();
             },
             colls));
@@ -523,7 +473,7 @@ Elm.Asteroids.make = function (_elm) {
                   {case "_Tuple2":
                      return _U.eq(_v13._1,rock);}
                   _U.badCase($moduleName,
-                  "on line 645, column 44 to 53");
+                  "on line 652, column 44 to 53");
                }();
             },
             colls));
@@ -538,7 +488,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return calve(_v17._1);}
                _U.badCase($moduleName,
-               "on line 648, column 40 to 47");
+               "on line 655, column 40 to 47");
             }();
          },
          colls);
@@ -549,7 +499,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return createExplosion(_v21._1);}
                _U.badCase($moduleName,
-               "on line 649, column 33 to 50");
+               "on line 656, column 33 to 50");
             }();
          },
          colls);
@@ -560,7 +510,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return createCrystal(_v25._1);}
                _U.badCase($moduleName,
-               "on line 650, column 41 to 56");
+               "on line 657, column 41 to 56");
             }();
          },
          colls);
@@ -656,25 +606,28 @@ Elm.Asteroids.make = function (_elm) {
    var viewPauseText = function (game) {
       return $Graphics$Collage.move({ctor: "_Tuple2"
                                     ,_0: 0
-                                    ,_1: 200})($Graphics$Collage.group(_U.eq(game.state,
-      Play) ? _L.fromArray([$Graphics$Collage.toForm(drawText(" "))]) : _L.fromArray([$Graphics$Collage.move({ctor: "_Tuple2"
-                                                                                                             ,_0: 0
-                                                                                                             ,_1: 80})($Graphics$Collage.toForm(drawText("LOOK OUT! SPACE ROCKS!")))
-                                                                                     ,$Graphics$Collage.move({ctor: "_Tuple2"
-                                                                                                             ,_0: 0
-                                                                                                             ,_1: 60})($Graphics$Collage.toForm(drawText("arrow keys to move")))
-                                                                                     ,$Graphics$Collage.move({ctor: "_Tuple2"
-                                                                                                             ,_0: 0
-                                                                                                             ,_1: 40})($Graphics$Collage.toForm(drawText("space bar to unpause and fire")))
-                                                                                     ,$Graphics$Collage.move({ctor: "_Tuple2"
-                                                                                                             ,_0: 0
-                                                                                                             ,_1: 20})($Graphics$Collage.toForm(drawText("deliver crystals to the bottom right base")))
-                                                                                     ,$Graphics$Collage.move({ctor: "_Tuple2"
-                                                                                                             ,_0: 0
-                                                                                                             ,_1: 0})($Graphics$Collage.toForm(drawText("bring survivors to the top left base")))
-                                                                                     ,$Graphics$Collage.move({ctor: "_Tuple2"
-                                                                                                             ,_0: 0
-                                                                                                             ,_1: -20})($Graphics$Collage.toForm(drawText("control key to pause or reset")))])));
+                                    ,_1: 170})($Graphics$Collage.group(_U.eq(game.state,
+      Play) ? _L.fromArray([$Graphics$Collage.toForm(drawText(""))]) : _L.fromArray([$Graphics$Collage.filled($Color.darkBlue)(A2($Graphics$Collage.rect,
+                                                                                    280,
+                                                                                    140))
+                                                                                    ,$Graphics$Collage.move({ctor: "_Tuple2"
+                                                                                                            ,_0: 0
+                                                                                                            ,_1: 50})($Graphics$Collage.toForm(drawText("LOOK OUT! SPACE ROCKS!")))
+                                                                                    ,$Graphics$Collage.move({ctor: "_Tuple2"
+                                                                                                            ,_0: 0
+                                                                                                            ,_1: 30})($Graphics$Collage.toForm(drawText("arrow keys to move")))
+                                                                                    ,$Graphics$Collage.move({ctor: "_Tuple2"
+                                                                                                            ,_0: 0
+                                                                                                            ,_1: 10})($Graphics$Collage.toForm(drawText("space bar to unpause and fire")))
+                                                                                    ,$Graphics$Collage.move({ctor: "_Tuple2"
+                                                                                                            ,_0: 0
+                                                                                                            ,_1: -10})($Graphics$Collage.toForm(drawText("deliver crystals to the bottom right base")))
+                                                                                    ,$Graphics$Collage.move({ctor: "_Tuple2"
+                                                                                                            ,_0: 0
+                                                                                                            ,_1: -30})($Graphics$Collage.toForm(drawText("bring survivors to the top left base")))
+                                                                                    ,$Graphics$Collage.move({ctor: "_Tuple2"
+                                                                                                            ,_0: 0
+                                                                                                            ,_1: -50})($Graphics$Collage.toForm(drawText("control key to pause or reset")))])));
    };
    var $ = {ctor: "_Tuple2"
            ,_0: 400
@@ -709,7 +662,7 @@ Elm.Asteroids.make = function (_elm) {
                         ,_1: _v29._1};
               }();}
          _U.badCase($moduleName,
-         "between lines 553 and 560");
+         "between lines 560 and 567");
       }();
    });
    var updateTransports = F2(function (input,
@@ -734,7 +687,7 @@ Elm.Asteroids.make = function (_elm) {
                   {case "_Tuple2":
                      return _U.eq(_v33._0,trans);}
                   _U.badCase($moduleName,
-                  "on line 537, column 46 to 56");
+                  "on line 544, column 46 to 56");
                }();
             },
             colls));
@@ -746,7 +699,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return createExplosion(_v37._1);}
                _U.badCase($moduleName,
-               "on line 540, column 33 to 50");
+               "on line 547, column 33 to 50");
             }();
          },
          colls);
@@ -757,7 +710,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return launchLifeboats(_v41._0);}
                _U.badCase($moduleName,
-               "on line 541, column 43 to 60");
+               "on line 548, column 43 to 60");
             }();
          },
          colls);
@@ -779,6 +732,56 @@ Elm.Asteroids.make = function (_elm) {
          game);
       }();
    });
+   var viewText = function (game) {
+      return function () {
+         var $ = game.lootSaved,
+         crystal = $._0,
+         lifeboat = $._1;
+         var string = A2($Basics._op["++"],
+         "Crystals delivered: ",
+         A2($Basics._op["++"],
+         $Basics.toString(crystal),
+         A2($Basics._op["++"],
+         "    Survivors rescued: ",
+         A2($Basics._op["++"],
+         $Basics.toString(lifeboat),
+         A2($Basics._op["++"],
+         "    Transports protected: ",
+         $Basics.toString(game.transportsAway))))));
+         return $Graphics$Collage.move({ctor: "_Tuple2"
+                                       ,_0: 0
+                                       ,_1: halfH - 30})($Graphics$Collage.toForm($Graphics$Element.opacity(0.8)($Graphics$Element.color($Color.darkBlue)(drawText(string)))));
+      }();
+   };
+   var viewHiscores = function (game) {
+      return function () {
+         var $ = game.hiscores,
+         x = $._0,
+         y = $._1,
+         z = $._2;
+         var string = _U.eq({ctor: "_Tuple3"
+                            ,_0: x
+                            ,_1: y
+                            ,_2: z},
+         {ctor: "_Tuple3"
+         ,_0: 0
+         ,_1: 0
+         ,_2: 0}) ? "" : A2($Basics._op["++"],
+         "High scores - Crystals: ",
+         A2($Basics._op["++"],
+         $Basics.toString(x),
+         A2($Basics._op["++"],
+         "    Survivors: ",
+         A2($Basics._op["++"],
+         $Basics.toString(y),
+         A2($Basics._op["++"],
+         "    Transports: ",
+         $Basics.toString(z))))));
+         return $Graphics$Collage.move({ctor: "_Tuple2"
+                                       ,_0: 0
+                                       ,_1: halfH - 10})($Graphics$Collage.toForm($Graphics$Element.opacity(0.8)($Graphics$Element.color($Color.darkBlue)(drawText(string)))));
+      }();
+   };
    var $ = {ctor: "_Tuple2"
            ,_0: 800
            ,_1: 600},
@@ -817,7 +820,7 @@ Elm.Asteroids.make = function (_elm) {
                case 0: return 0;
                case 1: return 200;}
             _U.badCase($moduleName,
-            "between lines 463 and 467");
+            "between lines 470 and 474");
          }();
          var t = input.tick;
          var player = game.player;
@@ -1084,13 +1087,13 @@ Elm.Asteroids.make = function (_elm) {
                            ,viewLoot(game.loot)
                            ,viewTransports(game.transports)
                            ,viewRocks(game.rocks)
-                           ,viewPlayer(game.player)
+                           ,viewHiscores(game)
                            ,viewExplosions(game.explosions)
                            ,viewText(game)
                            ,viewPauseText(game)
-                           ,viewHiscores(game)])));}
+                           ,viewPlayer(game.player)])));}
          _U.badCase($moduleName,
-         "between lines 758 and 772");
+         "between lines 765 and 779");
       }();
    });
    var Input = F5(function (a,
