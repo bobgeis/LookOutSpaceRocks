@@ -61,6 +61,7 @@ allInputs = Signal.sampleOn tick <|
                Input <~ tick 
                       ~ Keyboard.arrows 
                       ~ Keyboard.space 
+                      ~ Keyboard.ctrl 
                       ~ Time.every (Time.second * 3)
 
 
@@ -74,6 +75,7 @@ type alias Input =
     { tick : Time.Time
     , arrows : {x:Int,y:Int}
     , space : Bool
+    , ctrl : Bool
     , currentTime : Time.Time
     }
 
@@ -93,7 +95,6 @@ type alias Object a =
 -- player
 type alias Player =
     Object { ang:Float
-            , score:Int 
             , reload:Float
             , dead:Bool}
 
@@ -156,6 +157,7 @@ type alias Game =
     , seed : Random.Seed
     , transportsAway : Int
     , transports : List Transport
+    , hiscores : (Int,Int,Int)
     }
 
 -- this is the initial state of the game, needed for Signal.foldp
@@ -175,13 +177,14 @@ startGame =
     , seed = initialSeed
     , transportsAway = 0
     , transports = []
+    , hiscores = (0,0,0)
     }
 
 startPlayer : Player
 startPlayer = 
     { x=0, y=0, ang=degrees 90
     , vx=0, vy=0, r=10 
-    , score=0 , reload=0 , dead=False}
+    , reload=0 , dead=False}
 
 
 startRocks : List Rock
@@ -288,6 +291,7 @@ getSmallerSize size =
 updateGame : Input -> Game -> Game    
 updateGame input game =
     if game.state == Pause then maybeUnpause input game else
+    if input.ctrl then maybePause input game else
     game 
     |> updatePlayer input                       -- update the player
     |> updateBullets input                      -- update the bullets
@@ -304,6 +308,22 @@ maybeUnpause : Input -> Game -> Game
 maybeUnpause input game =
     if input.space == False then game else
     { game | state <- Play }
+
+maybePause : Input -> Game -> Game
+maybePause input game = 
+    let 
+    player = game.player
+    in
+    if player.dead then 
+        let 
+        (x',y') = game.lootSaved
+        z' = game.transportsAway
+        (x,y,z) = game.hiscores
+        hiscores' = (max x x',max y y',max z z')
+        in
+        { startGame | hiscores <- hiscores' }
+    else
+        { game | state <- Pause }
 
 
 updatePlayer : Input -> Game -> Game
@@ -526,7 +546,7 @@ createCrystal obj =
     if quickProb (obj.x * obj.y) > 0.3 then Nothing else
     let
     dvx = rockVChange * ( -0.5 + quickProb ( obj.x * obj.vx ) )
-    dvy = rockVChange * ( -0.5 + quickProb ( obj.x * obj.vx ) )
+    dvy = rockVChange * ( -0.5 + quickProb ( obj.y * obj.vy ) )
     in
     {x = obj.x , y = obj.y , vx = obj.vx +dvx , vy = obj.vy +dvy
     , r = lootRadius, kind = Crystal , ang = 0, vang = degrees 270
@@ -609,6 +629,7 @@ view (w,h) game =
     , viewExplosions game.explosions    -- draw the explosions
     , viewText game                     -- draw screen text
     , viewPauseText game                -- draw pause text
+    , viewHiscores game                 -- draw the high scores
     ]
     
 
@@ -649,8 +670,10 @@ drawRock rock =
 viewPlayer : Player -> Form
 viewPlayer player =
     if player.dead then 
-        [ drawText "So it goes." |> toForm |> move (0,200)
-        , drawText "Reload to play again!" |> toForm |> move (0,180)
+        [ drawText "You have died.  So it goes." 
+            |> toForm |> move (0,200)
+        , drawText "Press control to reset and play again!" 
+            |> toForm |> move (0,180)
         ] |> group
     else
     image 20 20 "images/Medic1.png"
@@ -720,16 +743,17 @@ viewText game =
              ++ "    Survivors rescued: " ++ (toString lifeboatS)
              ++ "    Transports escaped: " ++ ( toString game.transportsAway)
     in
-    drawText stringS |> toForm |> move (0,-280)
+    drawText stringS |> toForm |> move (0,-270)
 
 viewPauseText : Game -> Form
 viewPauseText game =
     (if game.state == Play then [drawText " " |> toForm] else
-    [ drawText "LOOKOUT! SPACE ROCKS!" |> toForm |> move (0,200)
-    , drawText "arrow keys to move" |> toForm |> move (0,180)
-    , drawText "space bar to start and fire" |> toForm |> move (0,160)
-    , drawText "deliver loot to the base" |> toForm |> move (0,140)
-    ]) |> group   
+    [ drawText "LOOK OUT! SPACE ROCKS!" |> toForm |> move (0,80)
+    , drawText "arrow keys to move" |> toForm |> move (0,60)
+    , drawText "space bar to unpause and fire" |> toForm |> move (0,40)
+    , drawText "deliver loot to the base" |> toForm |> move (0,20)
+    , drawText "control key to pause or reset" |> toForm |> move (0,0)
+    ]) |> group |> move (0,180)  
 
     
 drawText : String -> Element
@@ -743,8 +767,16 @@ viewSky =
     image gameW gameH "images/stars.jpg"
     |> toForm
 
-
-
+viewHiscores : Game -> Form
+viewHiscores game =
+    let 
+    (x,y,z) = game.hiscores
+    string = if (x,y,z)==(0,0,0) then " " else
+            "High scores - Crystals: " ++ (toString x)
+             ++ "    Survivors: " ++ (toString y)
+             ++ "    Transports: " ++ (toString z)
+    in
+    drawText string |> toForm |> move (0,-290)
 
 
 
