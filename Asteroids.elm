@@ -111,11 +111,18 @@ TODO:
 
 5) Weaponry: homing missiles?
 
-6) Make UI nicer?  Yellow text X(  Maybe put boxes around the text?    
+6) Make UI nicer?  Yellow text X(  Maybe put boxes around the text?  
+    Well now it's all blue.  Better?  
 
-7) User suggestions: _    
+7) User suggestions: 
+    - Don't let the ship be hidden by text. 
 
 --}
+
+
+
+
+
 
 {--
 
@@ -764,11 +771,11 @@ view (w,h) game =
     , viewLoot game.loot                -- draw the loot items
     , viewTransports game.transports    -- draw the transports
     , viewRocks game.rocks              -- draw the asteroids
-    , viewPlayer game.player            -- draw the player
+    , viewHiscores game                 -- draw the high scores
     , viewExplosions game.explosions    -- draw the explosions
     , viewText game                     -- draw screen text
     , viewPauseText game                -- draw pause text
-    , viewHiscores game                 -- draw the high scores
+    , viewPlayer game.player            -- draw the player
     ]
 -- ^FIFO: things later in the list are drawn over things earlier in the list
     
@@ -809,9 +816,9 @@ viewPlayer : Player -> Form
 viewPlayer player =
     if player.dead then 
         [ drawText "You have died.  So it goes." 
-            |> toForm |> move (0,200)
+            |> color darkBlue |> opacity 0.8 |> toForm |> move (0,200)
         , drawText "Press control to reset and play again!" 
-            |> toForm |> move (0,180)
+            |> color darkBlue |> opacity 0.8 |> toForm |> move (0,180)
         ] |> group
     else
     image 20 20 "images/Medic1.png"
@@ -881,26 +888,29 @@ viewText game =
              ++ "    Survivors rescued: " ++ (toString lifeboat)
              ++ "    Transports protected: " ++ ( toString game.transportsAway)
     in
-    drawText string |> toForm |> move (0,-270)
+    drawText string 
+    |> color darkBlue |> opacity 0.8 
+    |> toForm |> move (0,halfH-30)
 
 viewPauseText : Game -> Form
 viewPauseText game =
-    (if game.state == Play then [drawText " " |> toForm] else
-    [ drawText "LOOK OUT! SPACE ROCKS!" |> toForm |> move (0,80)
-    , drawText "arrow keys to move" |> toForm |> move (0,60)
-    , drawText "space bar to unpause and fire" |> toForm |> move (0,40)
+    (if game.state == Play then [drawText "" |> toForm] else
+    [ rect 280 140 |> filled darkBlue 
+    , drawText "LOOK OUT! SPACE ROCKS!" |> toForm |> move (0,50)
+    , drawText "arrow keys to move" |> toForm |> move (0,30)
+    , drawText "space bar to unpause and fire" |> toForm |> move (0,10)
     , drawText "deliver crystals to the bottom right base" 
-        |> toForm |> move (0,20)
+        |> toForm |> move (0,-10)
     , drawText "bring survivors to the top left base" 
-        |> toForm |> move (0,0)
-    , drawText "control key to pause or reset" |> toForm |> move (0,-20)
-    ]) |> group |> move (0,200)  
+        |> toForm |> move (0,-30)
+    , drawText "control key to pause or reset" |> toForm |> move (0,-50)
+    ]) |> group |> move (0,170)  
 
 -- given a string message, make an element of it    
 drawText : String -> Element
 drawText message =
     centered 
-    ( Text.fromString message |> Text.color yellow) 
+    ( Text.fromString message |> Text.color lightBlue) 
 
 
 
@@ -908,12 +918,14 @@ viewHiscores : Game -> Form
 viewHiscores game =
     let 
     (x,y,z) = game.hiscores
-    string = if (x,y,z)==(0,0,0) then " " else
+    string = if (x,y,z)==(0,0,0) then "" else
             "High scores - Crystals: " ++ (toString x)
              ++ "    Survivors: " ++ (toString y)
              ++ "    Transports: " ++ (toString z)
     in
-    drawText string |> toForm |> move (0,-290)
+    drawText string 
+    |> color darkBlue |> opacity 0.8
+    |> toForm |> move (0,halfH-10)
 
 
 
