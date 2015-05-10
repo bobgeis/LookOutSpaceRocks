@@ -1,13 +1,17 @@
-{—
+{--
 LOOK OUT! SPACE ROCKS!
 
 This is an attempt to make the game Asteroids in elm.  It's a learning project,
 so apologies in advance for ugly code and bugs.    
 
+A playable version of this should be available here: 
+http://bobgeis.github.io/LookOutSpaceRocks/
+Chrome is recommended.
+
 There are some variations from Asteroids: you pilot an armed space ambulance, 
 patrolling a patch of toroidal space near some star bases.  Try to keep 
 the area clean and safe.
-—}
+--}
 
 {--
 Credits:

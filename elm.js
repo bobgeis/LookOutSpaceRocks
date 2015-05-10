@@ -105,10 +105,10 @@ Elm.Asteroids.make = function (_elm) {
                            ,_0: _v0._0
                            ,_1: _v0._1 + 1};}
                  _U.badCase($moduleName,
-                 "between lines 641 and 643");
+                 "between lines 662 and 664");
               }();}
          _U.badCase($moduleName,
-         "between lines 641 and 643");
+         "between lines 662 and 664");
       }();
    });
    var updateBase = F2(function (input,
@@ -137,7 +137,7 @@ Elm.Asteroids.make = function (_elm) {
             case "Medium": return 15;
             case "Small": return 8;}
          _U.badCase($moduleName,
-         "between lines 392 and 396");
+         "between lines 413 and 417");
       }();
    };
    var getVec = function (ang) {
@@ -268,7 +268,7 @@ Elm.Asteroids.make = function (_elm) {
                case "Lifeboat":
                return "images/Lifeboat1.png";}
             _U.badCase($moduleName,
-            "between lines 853 and 859");
+            "between lines 874 and 880");
          }();
          return $Graphics$Collage.move({ctor: "_Tuple2"
                                        ,_0: loot.x
@@ -414,7 +414,7 @@ Elm.Asteroids.make = function (_elm) {
             case "Medium": return Small;
             case "Small": return Small;}
          _U.badCase($moduleName,
-         "between lines 404 and 408");
+         "between lines 425 and 429");
       }();
    };
    var calve = function (rock) {
@@ -457,7 +457,7 @@ Elm.Asteroids.make = function (_elm) {
                   {case "_Tuple2":
                      return _U.eq(_v9._0,bullet);}
                   _U.badCase($moduleName,
-                  "on line 651, column 48 to 59");
+                  "on line 672, column 48 to 59");
                }();
             },
             colls));
@@ -473,7 +473,7 @@ Elm.Asteroids.make = function (_elm) {
                   {case "_Tuple2":
                      return _U.eq(_v13._1,rock);}
                   _U.badCase($moduleName,
-                  "on line 652, column 44 to 53");
+                  "on line 673, column 44 to 53");
                }();
             },
             colls));
@@ -488,7 +488,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return calve(_v17._1);}
                _U.badCase($moduleName,
-               "on line 655, column 40 to 47");
+               "on line 676, column 40 to 47");
             }();
          },
          colls);
@@ -499,7 +499,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return createExplosion(_v21._1);}
                _U.badCase($moduleName,
-               "on line 656, column 33 to 50");
+               "on line 677, column 33 to 50");
             }();
          },
          colls);
@@ -510,7 +510,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return createCrystal(_v25._1);}
                _U.badCase($moduleName,
-               "on line 657, column 41 to 56");
+               "on line 678, column 41 to 56");
             }();
          },
          colls);
@@ -662,7 +662,7 @@ Elm.Asteroids.make = function (_elm) {
                         ,_1: _v29._1};
               }();}
          _U.badCase($moduleName,
-         "between lines 560 and 567");
+         "between lines 581 and 588");
       }();
    });
    var updateTransports = F2(function (input,
@@ -687,7 +687,7 @@ Elm.Asteroids.make = function (_elm) {
                   {case "_Tuple2":
                      return _U.eq(_v33._0,trans);}
                   _U.badCase($moduleName,
-                  "on line 544, column 46 to 56");
+                  "on line 565, column 46 to 56");
                }();
             },
             colls));
@@ -699,7 +699,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return createExplosion(_v37._1);}
                _U.badCase($moduleName,
-               "on line 547, column 33 to 50");
+               "on line 568, column 33 to 50");
             }();
          },
          colls);
@@ -710,7 +710,7 @@ Elm.Asteroids.make = function (_elm) {
                {case "_Tuple2":
                   return launchLifeboats(_v41._0);}
                _U.badCase($moduleName,
-               "on line 548, column 43 to 60");
+               "on line 569, column 43 to 60");
             }();
          },
          colls);
@@ -820,7 +820,7 @@ Elm.Asteroids.make = function (_elm) {
                case 0: return 0;
                case 1: return 200;}
             _U.badCase($moduleName,
-            "between lines 470 and 474");
+            "between lines 491 and 495");
          }();
          var t = input.tick;
          var player = game.player;
@@ -1093,7 +1093,7 @@ Elm.Asteroids.make = function (_elm) {
                            ,viewPauseText(game)
                            ,viewPlayer(game.player)])));}
          _U.badCase($moduleName,
-         "between lines 765 and 779");
+         "between lines 786 and 800");
       }();
    });
    var Input = F5(function (a,

@@ -19,6 +19,10 @@ LOOK OUT! SPACE ROCKS!
 This is an attempt to make the game Asteroids in elm.  It's a learning project,
 so apologies in advance for ugly code and bugs.    
 
+A playable version of this should be available here: 
+http://bobgeis.github.io/LookOutSpaceRocks/
+Chrome is recommended.
+
 There are some variations from Asteroids: you pilot an armed space ambulance, 
 patrolling a patch of toroidal space near some star bases.  Try to keep 
 the area clean and safe.
@@ -57,7 +61,10 @@ From there, the Make Pong page in particular:
 Another asteroids in elm implementation:
     https://github.com/CheatEx/elm-asteroids
     (unfamiliar with functional languages, I was unsure how to implement
-    collision detection: folds or maps or etc? )
+    collision detection: folds or maps or etc? Having the collision function 
+    return pairs of colliding objects was a good idea.  If I wrote this again
+    I'd probably try folds that returned a tuple of lists of each kind of 
+    object I needed (ie: (asteroids',bullets',loot',newExplosions)))
 --}
 
 {--
@@ -87,6 +94,9 @@ Some things learned:
 4) Doing sound is also hard.  Maybe harder than making a proper RNG ;)  It can 
     be done (see elm tetris, and the timer gong), but there are complications
     and drawbacks (eg breaking elm reactor).  
+
+5) Fold is awesome. Learn fold, love fold.
+
 --}
 
 {--
@@ -115,8 +125,19 @@ TODO:
     Well now it's all blue.  Better?  
 
 7) User suggestions: 
-    - Don't let the ship be hidden by text. 
+    - Don't let the ship be hidden by text.  DONE!
+    - Don't let rocks spawn on top of the player.
 
+8) Colored background for html.  Dark blue?
+
+9) Rock images instead of circles.  I think this would make it too slow. 
+
+10) Add sound/music?  This would be neat! Need a good sound library though.  
+    Will re-evaulate this later.
+
+11) Persistence!  So when you re-open the game your high scores are remembered.
+    This is done by TodoMVC example, and the santa clicker game,
+    so we know it's possible in elm!          
 --}
 
 
